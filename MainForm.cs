@@ -20,8 +20,9 @@ namespace RadnoVreme
         private string korisnikSmena;
         private string smena;
         private string connectionString = "Data Source=MILANDJ\\SQLEXPRESS;Initial Catalog=RadnoVreme;Integrated Security=True;Encrypt=False";
+        private int prijavljeniKorisnikId;
 
-        public MainForm(string uloga, string imePrezime, string korisnikSmena)
+        public MainForm(string uloga, string imePrezime, string korisnikSmena, int prijavljenKorisnikId = 0)
         {
             // ISPRAVLJEN KOD ZA CIRILICU
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("sr-Cyrl-RS");
@@ -30,8 +31,10 @@ namespace RadnoVreme
             this.uloga = uloga;
             this.imePrezime = imePrezime;
             this.korisnikSmena = korisnikSmena;
+            this.prijavljeniKorisnikId = prijavljenKorisnikId;
             this.InitializeComponent();
             this.KreirajKontrole();
+            
         }
 
         private void InitializeComponent()
@@ -250,7 +253,7 @@ namespace RadnoVreme
             else
             {
                 jeAdmin = false;
-                trenutnaSmena = smena; // smena je iz vašeg prijavljenog korisnika
+                trenutnaSmena = korisnikSmena; // smena je iz vašeg prijavljenog korisnika
             }
 
             PregledPromenaRadnikaForm form = new PregledPromenaRadnikaForm(trenutnaSmena, jeAdmin);
@@ -263,12 +266,102 @@ namespace RadnoVreme
             unosForm.ShowDialog();
         }
 
+        private int PronadjiIdKorisnikaIzBaze()
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    // Pretpostavka: Ime i prezime su jedinstveni u sistemu
+                    string[] delovi = imePrezime.Split(' ');
+
+                    if (delovi.Length >= 2)
+                    {
+                        string ime = delovi[0];
+                        string prezime = delovi[1];
+
+                        string query = @"SELECT Id FROM Korisnici 
+                           WHERE Ime = @Ime 
+                           AND Prezime = @Prezime 
+                           AND Aktivan = 1
+                           AND Uloga = @Uloga";
+
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Ime", ime);
+                            cmd.Parameters.AddWithValue("@Prezime", prezime);
+                            cmd.Parameters.AddWithValue("@Uloga", uloga);
+
+                            object result = cmd.ExecuteScalar();
+
+                            if (result != null)
+                            {
+                                int id = Convert.ToInt32(result);
+                                System.Diagnostics.Debug.WriteLine($"✅ Пронађен ID корисника: {id} за {imePrezime}");
+                                return id;
+                            }
+                        }
+                    }
+
+                    // Ako nije pronađen po imenu/prezimenu, pokušaj po ulozi
+                    string query2 = @"SELECT TOP 1 Id FROM Korisnici 
+                        WHERE Uloga = @Uloga 
+                        AND Aktivan = 1 
+                        ORDER BY Id";
+
+                    using (SqlCommand cmd2 = new SqlCommand(query2, conn))
+                    {
+                        cmd2.Parameters.AddWithValue("@Uloga", uloga);
+                        object result2 = cmd2.ExecuteScalar();
+
+                        if (result2 != null)
+                        {
+                            int id = Convert.ToInt32(result2);
+                            System.Diagnostics.Debug.WriteLine($"✅ Пронађен ID по улози {uloga}: {id}");
+                            return id;
+                        }
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"⚠️ Није пронађен ID корисника за {imePrezime}");
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"💥 Грешка при проналажењу ID-ја корисника: {ex.Message}");
+                return 0;
+            }
+        }
+
+        // Ažurirajte metodu UzmiIdPrijavljenogKorisnika:
+        public int UzmiIdPrijavljenogKorisnika()
+        {
+            // Ako već imamo ID, vrati ga
+            if (prijavljeniKorisnikId > 0)
+                return prijavljeniKorisnikId;
+
+            // Ako nemamo ID, pokušaj da ga pronađeš
+            prijavljeniKorisnikId = PronadjiIdKorisnikaIzBaze();
+            return prijavljeniKorisnikId;
+        }
+
         private void IzmenaRadnikaItem_Click(object sender, EventArgs e)
         {
-            IzmenaRadnikaForm izmenaForm = new IzmenaRadnikaForm(uloga, korisnikSmena);
+            // ★★★ SADA IMAMO ID KORISNIKA ★★★
+            int korisnikId = UzmiIdPrijavljenogKorisnika();
+
+            if (korisnikId == 0)
+            {
+                MessageBox.Show("⚠️ Не могу да утврдим ко је пријављен корисник!\nПромене неће бити логоване.",
+                               "Упозорење", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            IzmenaRadnikaForm izmenaForm = new IzmenaRadnikaForm(uloga, korisnikSmena, korisnikId);
             izmenaForm.ShowDialog();
         }
-        
+
         private void PregledRadnikaItem_Click(object sender, EventArgs e)
         {
             PregledRadnikaForm pregledForm = new PregledRadnikaForm(korisnikSmena);

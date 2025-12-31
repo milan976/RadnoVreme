@@ -1,0 +1,17 @@
+C:\Users\DeLL\source\repos\RadnoVreme\bin\Debug\RadnoVreme.exe.config
+C:\Users\DeLL\source\repos\RadnoVreme\bin\Debug\RadnoVreme.exe
+C:\Users\DeLL\source\repos\RadnoVreme\bin\Debug\RadnoVreme.pdb
+C:\Users\DeLL\source\repos\RadnoVreme\bin\Debug\System.Configuration.ConfigurationManager.dll
+C:\Users\DeLL\source\repos\RadnoVreme\bin\Debug\System.Configuration.ConfigurationManager.xml
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.csproj.AssemblyReference.cache
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.Properties.Resources.resources
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.csproj.GenerateResource.cache
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.csproj.CoreCompileInputs.cache
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.csproj.Up2Date
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.exe
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.pdb
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.exe.config
+C:\Users\DeLL\source\repos\RadnoVreme\bin\Debug\RadnoVreme.exe.manifest
+C:\Users\DeLL\source\repos\RadnoVreme\bin\Debug\RadnoVreme.application
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.exe.manifest
+C:\Users\DeLL\source\repos\RadnoVreme\obj\Debug\RadnoVreme.application

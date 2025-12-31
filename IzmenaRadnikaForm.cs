@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Data.SqlClient;
@@ -25,24 +25,26 @@ namespace RadnoVreme
         private string ulogaKorisnika;
         private string smenaKorisnika;
         private BazaService bazaService;
+        private int izvrsioKorisnikId; // ★★★ DODATO: ID korisnika koji vrši izmenu ★★★
 
-        public IzmenaRadnikaForm(string uloga, string smena)
+        // ★★★ DODAT: Novi konstruktor sa korisnik ID ★★★
+        public IzmenaRadnikaForm(string uloga, string smena, int korisnikId = 0)
         {
             this.ulogaKorisnika = uloga;
             this.smenaKorisnika = smena;
+            this.izvrsioKorisnikId = korisnikId; // ★★★ Sačuvaj ID korisnika ★★★
             this.bazaService = new BazaService();
 
-            //  BITNO: Prvo pozovite InitializeComponent() 
+            // BITNO: Prvo pozovite InitializeComponent() 
             InitializeComponent();
             KreirajKontrole();
             UcitajRadnike();
             UcitajZvanja();
             UcitajSmane();
             ResetujPolja();
-
         }
 
-        private void KreirajKontrole()  
+        private void KreirajKontrole()
         {
             this.Text = $"Измена и брисање радника ({ulogaKorisnika})";
             this.Size = new Size(500, 550);
@@ -77,17 +79,30 @@ namespace RadnoVreme
             lblOgranicenje.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblOgranicenje);
 
+            // ★★★ DODAT: Prikaz korisnika koji vrši izmenu ★★★
+            if (izvrsioKorisnikId > 0)
+            {
+                Label lblIzvrsilac = new Label();
+                lblIzvrsilac.Text = $"👤 Измене врши корисник ИД: {izvrsioKorisnikId}";
+                lblIzvrsilac.Font = new Font("Arial", 8, FontStyle.Italic);
+                lblIzvrsilac.ForeColor = Color.DarkGray;
+                lblIzvrsilac.Size = new Size(300, 15);
+                lblIzvrsilac.Location = new Point(100, 85);
+                lblIzvrsilac.TextAlign = ContentAlignment.MiddleCenter;
+                this.Controls.Add(lblIzvrsilac);
+            }
+
             // ComboBox za odabir radnika
             Label lblIzaberiRadnika = new Label();
             lblIzaberiRadnika.Text = "Изаберите радника:";
             lblIzaberiRadnika.Font = new Font("Arial", 10, FontStyle.Regular);
             lblIzaberiRadnika.Size = new Size(150, 25);
-            lblIzaberiRadnika.Location = new Point(50, 90);
+            lblIzaberiRadnika.Location = new Point(50, 110);
             this.Controls.Add(lblIzaberiRadnika);
 
-            cmbRadnici = new ComboBox(); // ★★★ INICIJALIZOVANO ★★★
+            cmbRadnici = new ComboBox();
             cmbRadnici.Size = new Size(350, 25);
-            cmbRadnici.Location = new Point(50, 115);
+            cmbRadnici.Location = new Point(50, 135);
             cmbRadnici.Font = new Font("Arial", 10, FontStyle.Regular);
             cmbRadnici.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbRadnici.SelectedIndexChanged += CmbRadnici_SelectedIndexChanged;
@@ -98,12 +113,12 @@ namespace RadnoVreme
             lblIme.Text = "Име:";
             lblIme.Font = new Font("Arial", 10, FontStyle.Regular);
             lblIme.Size = new Size(150, 25);
-            lblIme.Location = new Point(50, 160);
+            lblIme.Location = new Point(50, 180);
             this.Controls.Add(lblIme);
 
-            txtIme = new TextBox(); // ★★★ INICIJALIZOVANO ★★★
+            txtIme = new TextBox();
             txtIme.Size = new Size(350, 25);
-            txtIme.Location = new Point(50, 185);
+            txtIme.Location = new Point(50, 205);
             txtIme.Font = new Font("Arial", 10, FontStyle.Regular);
             this.Controls.Add(txtIme);
 
@@ -111,12 +126,12 @@ namespace RadnoVreme
             lblPrezime.Text = "Презиме:";
             lblPrezime.Font = new Font("Arial", 10, FontStyle.Regular);
             lblPrezime.Size = new Size(150, 25);
-            lblPrezime.Location = new Point(50, 220);
+            lblPrezime.Location = new Point(50, 240);
             this.Controls.Add(lblPrezime);
 
-            txtPrezime = new TextBox(); // ★★★ INICIJALIZOVANO ★★★
+            txtPrezime = new TextBox();
             txtPrezime.Size = new Size(350, 25);
-            txtPrezime.Location = new Point(50, 245);
+            txtPrezime.Location = new Point(50, 265);
             txtPrezime.Font = new Font("Arial", 10, FontStyle.Regular);
             this.Controls.Add(txtPrezime);
 
@@ -125,12 +140,12 @@ namespace RadnoVreme
             lblZvanje.Text = "Звање:";
             lblZvanje.Font = new Font("Arial", 10, FontStyle.Regular);
             lblZvanje.Size = new Size(150, 25);
-            lblZvanje.Location = new Point(50, 280);
+            lblZvanje.Location = new Point(50, 300);
             this.Controls.Add(lblZvanje);
 
-            cmbZvanje = new ComboBox(); // ★★★ INICIJALIZOVANO ★★★
+            cmbZvanje = new ComboBox();
             cmbZvanje.Size = new Size(350, 25);
-            cmbZvanje.Location = new Point(50, 305);
+            cmbZvanje.Location = new Point(50, 325);
             cmbZvanje.Font = new Font("Arial", 10, FontStyle.Regular);
             cmbZvanje.DropDownStyle = ComboBoxStyle.DropDownList;
             this.Controls.Add(cmbZvanje);
@@ -139,39 +154,39 @@ namespace RadnoVreme
             lblSmena.Text = "Смена:";
             lblSmena.Font = new Font("Arial", 10, FontStyle.Regular);
             lblSmena.Size = new Size(150, 25);
-            lblSmena.Location = new Point(50, 340);
+            lblSmena.Location = new Point(50, 360);
             this.Controls.Add(lblSmena);
 
-            cmbSmena = new ComboBox(); // ★★★ INICIJALIZOVANO ★★★
+            cmbSmena = new ComboBox();
             cmbSmena.Size = new Size(350, 25);
-            cmbSmena.Location = new Point(50, 365);
+            cmbSmena.Location = new Point(50, 385);
             cmbSmena.Font = new Font("Arial", 10, FontStyle.Regular);
             cmbSmena.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbSmena.Enabled = true;
             this.Controls.Add(cmbSmena);
 
-            chkAktivan = new CheckBox(); // ★★★ INICIJALIZOVANO ★★★
+            chkAktivan = new CheckBox();
             chkAktivan.Text = "Активан радник";
             chkAktivan.Font = new Font("Arial", 10, FontStyle.Regular);
             chkAktivan.Size = new Size(150, 25);
-            chkAktivan.Location = new Point(50, 400);
+            chkAktivan.Location = new Point(50, 420);
             chkAktivan.Checked = true;
             this.Controls.Add(chkAktivan);
 
             // Status label
-            lblStatus = new Label(); // ★★★ INICIJALIZOVANO ★★★
+            lblStatus = new Label();
             lblStatus.Text = "";
             lblStatus.Font = new Font("Arial", 9, FontStyle.Regular);
             lblStatus.Size = new Size(400, 25);
-            lblStatus.Location = new Point(50, 430);
+            lblStatus.Location = new Point(50, 450);
             lblStatus.TextAlign = ContentAlignment.MiddleLeft;
             this.Controls.Add(lblStatus);
 
             // Dugme za čuvanje
-            btnSacuvaj = new Button(); // ★★★ INICIJALIZOVANO ★★★
+            btnSacuvaj = new Button();
             btnSacuvaj.Text = "💾 Sačuvaj izmene";
             btnSacuvaj.Size = new Size(140, 35);
-            btnSacuvaj.Location = new Point(50, 460);
+            btnSacuvaj.Location = new Point(50, 480);
             btnSacuvaj.BackColor = Color.DarkGreen;
             btnSacuvaj.ForeColor = Color.White;
             btnSacuvaj.Font = new Font("Arial", 10, FontStyle.Bold);
@@ -179,10 +194,10 @@ namespace RadnoVreme
             this.Controls.Add(btnSacuvaj);
 
             // Dugme za brisanje
-            btnObrisi = new Button(); // ★★★ INICIJALIZOVANO ★★★
+            btnObrisi = new Button();
             btnObrisi.Text = "🗑️ Обриши радника";
             btnObrisi.Size = new Size(140, 35);
-            btnObrisi.Location = new Point(200, 460);
+            btnObrisi.Location = new Point(200, 480);
             btnObrisi.BackColor = Color.DarkRed;
             btnObrisi.ForeColor = Color.White;
             btnObrisi.Font = new Font("Arial", 10, FontStyle.Bold);
@@ -190,10 +205,10 @@ namespace RadnoVreme
             this.Controls.Add(btnObrisi);
 
             // Dugme za odustajanje
-            btnOdustani = new Button(); // ★★★ INICIJALIZOVANO ★★★
+            btnOdustani = new Button();
             btnOdustani.Text = "❌ Одустани";
             btnOdustani.Size = new Size(120, 35);
-            btnOdustani.Location = new Point(350, 460);
+            btnOdustani.Location = new Point(350, 480);
             btnOdustani.BackColor = Color.Gray;
             btnOdustani.ForeColor = Color.White;
             btnOdustani.Font = new Font("Arial", 10, FontStyle.Bold);
@@ -238,14 +253,14 @@ namespace RadnoVreme
 
                     if (ulogaKorisnika == "Администратор")
                     {
-                        query = @"SELECT Id, Ime, Prezime, Zvanje, Smena, Aktivan 
+                        query = @"SELECT Id, Ime, Prezime, Zvanje, Smena, Aktivan, DatumKreiranja 
                        FROM Radnici 
                        ORDER BY Prezime, Ime";
                         cmd = new SqlCommand(query, conn);
                     }
                     else
                     {
-                        query = @"SELECT Id, Ime, Prezime, Zvanje, Smena, Aktivan 
+                        query = @"SELECT Id, Ime, Prezime, Zvanje, Smena, Aktivan, DatumKreiranja 
                        FROM Radnici 
                        WHERE Smena = @Smena AND Aktivan = 1
                        ORDER BY Prezime, Ime";
@@ -265,23 +280,25 @@ namespace RadnoVreme
                                 Prezime = reader["Prezime"].ToString(),
                                 Zvanje = reader["Zvanje"]?.ToString(),
                                 Smena = reader["Smena"].ToString(),
-                                Aktivan = (bool)reader["Aktivan"]
+                                Aktivan = (bool)reader["Aktivan"],
+                                DatumKreiranja = (DateTime)reader["DatumKreiranja"]
                             });
                         }
                     }
                 }
 
                 cmbRadnici.Items.Clear();
-                cmbRadnici.Items.Add("(Изаберите радника...)"); 
+                cmbRadnici.Items.Add("(Изаберите радника...)");
 
                 foreach (var radnik in radnici)
                 {
-                    cmbRadnici.Items.Add($"{radnik.Prezime} {radnik.Ime} ({radnik.Smena})");
+                    string status = radnik.Aktivan ? "🟢" : "🔴";
+                    cmbRadnici.Items.Add($"{status} {radnik.Prezime} {radnik.Ime} ({radnik.Smena})");
                 }
 
                 if (cmbRadnici.Items.Count > 0)
                 {
-                    cmbRadnici.SelectedIndex = 0; // ★★★ OVO ĆE SADA BITI "(Izaberite radnika...)" ★★★
+                    cmbRadnici.SelectedIndex = 0;
                     lblStatus.Text = $"Пронађено {radnici.Count} радника";
                     lblStatus.ForeColor = Color.Blue;
                 }
@@ -298,6 +315,7 @@ namespace RadnoVreme
                               MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
         private void OnemoguciKontrole()
         {
             txtIme.Enabled = false;
@@ -314,7 +332,6 @@ namespace RadnoVreme
             {
                 cmbSmena.Items.Clear();
                 cmbSmena.Items.Add("Изаберите смену...");
-
 
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
@@ -340,14 +357,14 @@ namespace RadnoVreme
 
         private void CmbRadnici_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbRadnici.SelectedIndex == 0 )
+            if (cmbRadnici.SelectedIndex == 0)
             {
                 ResetujPolja();
                 return;
             }
-            if (cmbRadnici.SelectedIndex > 0 && cmbRadnici.SelectedIndex -1 < radnici.Count)
+            if (cmbRadnici.SelectedIndex > 0 && cmbRadnici.SelectedIndex - 1 < radnici.Count)
             {
-                trenutniRadnik = radnici[cmbRadnici.SelectedIndex - 1]; 
+                trenutniRadnik = radnici[cmbRadnici.SelectedIndex - 1];
                 PopuniPodatke();
             }
             else
@@ -363,7 +380,7 @@ namespace RadnoVreme
             cmbZvanje.SelectedIndex = -1;
             cmbSmena.SelectedIndex = -1;
             chkAktivan.Checked = true;
-            
+
             OnemoguciKontrole();
             lblStatus.Text = "Изаберите радника за измену или брисање.";
             lblStatus.ForeColor = Color.Black;
@@ -422,31 +439,99 @@ namespace RadnoVreme
 
             try
             {
+                // ★★★ PRVO UZMI STARE PODATKE ZA LOG ★★★
+                string stariPodaci = $"Име: {trenutniRadnik.Ime}, " +
+                                   $"Презиме: {trenutniRadnik.Prezime}, " +
+                                   $"Звање: {trenutniRadnik.Zvanje ?? "Није постављено"}, " +
+                                   $"Активан: {trenutniRadnik.Aktivan}, " +
+                                   $"Смена: {trenutniRadnik.Smena}";
+
+                // ★★★ FORMIRAJ NOVE PODATKE ★★★
+                string noviPodaci = $"Име: {txtIme.Text.Trim()}, " +
+                                  $"Презиме: {txtPrezime.Text.Trim()}, " +
+                                  $"Звање: {cmbZvanje.SelectedItem?.ToString() ?? "Није постављено"}, " +
+                                  $"Активан: {chkAktivan.Checked}, " +
+                                  $"Смена: {trenutniRadnik.Smena}"; // Smena se ne menja osim za admina
+
+                // ★★★ DODAJ LOGIKU ZA PROMENU SMENE AKO JE ADMIN ★★★
+                if (ulogaKorisnika == "Администратор" && cmbSmena.SelectedItem != null)
+                {
+                    string novaSmena = cmbSmena.SelectedItem.ToString();
+                    noviPodaci = $"Име: {txtIme.Text.Trim()}, " +
+                               $"Презиме: {txtPrezime.Text.Trim()}, " +
+                               $"Звање: {cmbZvanje.SelectedItem?.ToString() ?? "Није постављено"}, " +
+                               $"Активан: {chkAktivan.Checked}, " +
+                               $"Смена: {novaSmena}";
+                }
+
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    string query = @"UPDATE Radnici 
-                                   SET Ime = @Ime, Prezime = @Prezime, Zvanje = @Zvanje, 
-                                       Aktivan = @Aktivan
-                                   WHERE Id = @Id";
+
+                    // ★★★ KREIRAJ QUERY SA PROMENOM SMENE ZA ADMINA ★★★
+                    string query;
+                    if (ulogaKorisnika == "Администратор" && cmbSmena.SelectedItem != null)
+                    {
+                        query = @"UPDATE Radnici 
+                               SET Ime = @Ime, Prezime = @Prezime, Zvanje = @Zvanje, 
+                                   Aktivan = @Aktivan, Smena = @Smena
+                               WHERE Id = @Id";
+                    }
+                    else
+                    {
+                        query = @"UPDATE Radnici 
+                               SET Ime = @Ime, Prezime = @Prezime, Zvanje = @Zvanje, 
+                                   Aktivan = @Aktivan
+                               WHERE Id = @Id";
+                    }
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@Id", trenutniRadnik.Id);
                         cmd.Parameters.AddWithValue("@Ime", txtIme.Text.Trim());
                         cmd.Parameters.AddWithValue("@Prezime", txtPrezime.Text.Trim());
-                        cmd.Parameters.AddWithValue("@Zvanje", cmbZvanje.SelectedItem.ToString());
+                        cmd.Parameters.AddWithValue("@Zvanje", cmbZvanje.SelectedItem?.ToString() ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@Aktivan", chkAktivan.Checked);
+
+                        // Dodaj smenu samo ako je admin
+                        if (ulogaKorisnika == "Администратор" && cmbSmena.SelectedItem != null)
+                        {
+                            cmd.Parameters.AddWithValue("@Smena", cmbSmena.SelectedItem.ToString());
+                        }
 
                         int affectedRows = cmd.ExecuteNonQuery();
 
                         if (affectedRows > 0)
                         {
-                            lblStatus.Text = "✅ Подаци су успешно сачувани!";
+                            // ★★★ LOGUJ PROMENU U RadnikPromeneLog ★★★
+                            DateTime datumPromene = DateTime.Now;
+
+                            // Za radnike logujemo kao "Измена података"
+                            bazaService.LogujPromenuRadnika(
+                                trenutniRadnik.Id,           // RadnikId
+                                datumPromene,                // Datum (danasnji datum za log)
+                                stariPodaci,                 // StariStatus (stari podaci)
+                                noviPodaci,                  // NoviStatus (novi podaci)
+                                null,                        // StariSati (nema sati za radnike)
+                                null,                        // NoviSati (nema sati za radnike)
+                                null,                        // StariMinute (nema minuta)
+                                null,                        // NoviMinute (nema minuta)
+                                false,                       // JeNocnaSmena (nije nocna smena)
+                                "Измена података",           // TipPromene
+                                izvrsioKorisnikId,           // IzvrsioKorisnikId
+                                "Измена основних података о раднику"  // Komentar
+                            );
+
+                            lblStatus.Text = "✅ Подаци су успешно сачувани и логовани!";
                             lblStatus.ForeColor = Color.Green;
 
                             // Osveži listu radnika
                             UcitajRadnike();
+
+                            // Prikaži poruku o logovanju
+                            System.Diagnostics.Debug.WriteLine($"📝 Логована промена радника ИД {trenutniRadnik.Id}");
+                            System.Diagnostics.Debug.WriteLine($"   Старо: {stariPodaci}");
+                            System.Diagnostics.Debug.WriteLine($"   Ново: {noviPodaci}");
                         }
                         else
                         {
@@ -486,6 +571,13 @@ namespace RadnoVreme
             {
                 try
                 {
+                    // ★★★ UZMI PODATKE PRE BRISANJA ZA LOG ★★★
+                    string podaciRadnika = $"Име: {trenutniRadnik.Ime}, " +
+                                         $"Презиме: {trenutniRadnik.Prezime}, " +
+                                         $"Звање: {trenutniRadnik.Zvanje ?? "Није постављено"}, " +
+                                         $"Смена: {trenutniRadnik.Smena}, " +
+                                         $"Активан: {trenutniRadnik.Aktivan}";
+
                     using (SqlConnection conn = new SqlConnection(connectionString))
                     {
                         conn.Open();
@@ -500,7 +592,25 @@ namespace RadnoVreme
 
                             if (affectedRows > 0)
                             {
-                                lblStatus.Text = $"✅ Радник {imePrezime} успешно обрисан!";
+                                // ★★★ LOGUJ BRISANJE U RadnikPromeneLog ★★★
+                                DateTime datumPromene = DateTime.Now;
+
+                                bazaService.LogujPromenuRadnika(
+                                    trenutniRadnik.Id,           // RadnikId
+                                    datumPromene,                // Datum (danasnji datum za log)
+                                    podaciRadnika,              // StariStatus (podaci pre brisanja)
+                                    null,                       // NoviStatus (null za brisanje)
+                                    null,                       // StariSati
+                                    null,                       // NoviSati
+                                    null,                       // StariMinute
+                                    null,                       // NoviMinute
+                                    false,                      // JeNocnaSmena
+                                    "Брисање",                  // TipPromene
+                                    izvrsioKorisnikId,          // IzvrsioKorisnikId
+                                    "Софт брисање радника"      // Komentar
+                                );
+
+                                lblStatus.Text = $"✅ Радник {imePrezime} успешно обрисан и логовано!";
                                 lblStatus.ForeColor = Color.Green;
 
                                 // Osveži listu radnika
@@ -513,6 +623,9 @@ namespace RadnoVreme
                                 cmbZvanje.SelectedIndex = -1;
                                 cmbSmena.SelectedIndex = -1;
                                 chkAktivan.Checked = true;
+
+                                // Prikaži poruku o logovanju
+                                System.Diagnostics.Debug.WriteLine($"🗑️ Логовано брисање радника ИД {trenutniRadnik?.Id}");
                             }
                             else
                             {
@@ -533,6 +646,13 @@ namespace RadnoVreme
         private void BtnOdustani_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        // ★★★ DODAT: Property za pristup ID-ju korisnika ★★★
+        public int IzvrsioKorisnikId
+        {
+            get { return izvrsioKorisnikId; }
+            set { izvrsioKorisnikId = value; }
         }
     }
 }
